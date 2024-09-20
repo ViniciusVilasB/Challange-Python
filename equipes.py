@@ -1,5 +1,5 @@
 lista_equipes = [
-    {'nome': 'ABT Cupra', 'vitorias': 47, 'podios': 47, 'corridas': 115},
+    {'nome': 'ABT Cupra', 'vitorias': 14, 'podios': 47, 'corridas': 115},
     {'nome': 'Andretti', 'vitorias': 11, 'podios': 37, 'corridas': 132},
     {'nome': 'DS Penske', 'vitorias': 3, 'podios': 17, 'corridas': 132},
     {'nome': 'Envision', 'vitorias': 16, 'podios': 53, 'corridas': 132},
