@@ -1,4 +1,4 @@
-from usuarios import usuario_base, lista_usuarios
+from usuarios import *
 
 def criar_nome():
     while True:

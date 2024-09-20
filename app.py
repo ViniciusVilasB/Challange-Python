@@ -5,6 +5,7 @@ from usuarios import lista_usuarios
 from cadastro import cadastrar
 from login import entrar
 from corridas import proxima_corrida
+from equipes import *
 
 '''
 import logging
@@ -19,9 +20,6 @@ logging.warning('Isso é um alerta')
 logging.error('Ocorreu um erro!')
 logging.critical('Erro crítico! O sistema pode parar de funcionar.')
 '''
-
-lista_equipes = ["ABT Cupra", "Andretti", "DS Penske", "Envision", "ERT", "Jaguar TCS",
-                 "Mahindra", "Maseratti MSG", "Mclaren", "Nissan", "Tag Heuer Porsche", "Nenhuma"]
 
 ##############################################################################################################
 
@@ -105,25 +103,31 @@ def exibicao_personalizada(titulo, msg=None):
         print('=' * 60)
 
 def alterar_equipe(retornar_para):
-    texto = ''
-    for i in range(len(lista_equipes) - 1):
-        if i % 2 == 0:
-            if lista_equipes[i] != lista_equipes[-2]:
-                texto += f'{i + 1}. {lista_equipes[i]:<30}\t{i + 2}. {lista_equipes[i + 1]}\n'
-            else:
-                texto += f'{i + 1}. {lista_equipes[i]:<30}\t{i + 2}. {lista_equipes[i + 1]}'
-
+    texto = listar_equipes(True)
     exibicao_personalizada('Altere a equipe', texto)
-    '''
-    print(f'{'1. Alterar equipe favorita':<30}\t2. Voltar\n'
-          f'{'=' * 60}')
-    '''
+
     print(f'Favorita atual: {usuario['equipe_favorita']}')
     opcao_escolhida = forca_opcao('\nEscolha uma nova equipe para acompanhar: ', range(1, 13))
 
-    usuario['equipe_favorita'] = lista_equipes[opcao_escolhida - 1]
+    usuario['equipe_favorita'] = lista_equipes[opcao_escolhida - 1]['nome']
 
     return retornar_para()
+
+def exibir_detalhes():
+    if usuario['equipe_favorita'] != 'Nenhuma':
+        for equipe in lista_equipes:
+            if equipe['nome'] == usuario['equipe_favorita']:
+                exibicao_personalizada(usuario['equipe_favorita'],
+                                       f'{'Nome:':<30}\t{equipe['nome']}\n'
+                                       f'{'Vitórias:':<30}\t{equipe['vitorias']}\n'
+                                       f'{'Pódios:':<30}\t{equipe['podios']}\n'
+                                       f'{'Corridas:':<30}\t{equipe['corridas']}')
+                break
+        input('Pressione ENTER para continuar')
+    else:
+        print('Você não possui uma equipe favorita.')
+        input('Pressione ENTER para continuar')
+    pagina_equipes()
 
 ##############################################################################################################
 
@@ -167,7 +171,8 @@ def exibir_readme(caminho_arquivo='README.md'):
     except IOError as e:
         print(f'Erro ao ler o arquivo {caminho_arquivo}: {e}')
     finally:
-        input('Pressione ENTER para continuar')
+        input(f'{'=' * 50}\n'
+              'Pressione ENTER para continuar')
 
 def criar_readme(caminho_arquivo):
     '''
@@ -227,7 +232,8 @@ def exibir_opcoes_menu():
                       f'{'3. Ranking':<30}\t7. Meu perfil\n'
                       f'{'4. Equipes':<30}\t8. Sair')
 
-    opcao_escolhida = forca_opcao('\nEscolha uma opção: ', range(1, 9))
+    print(f'\nOlá {usuario['nome']}')
+    opcao_escolhida = forca_opcao('Escolha uma opção: ', range(1, 9))
 
     match opcao_escolhida:
         case 1: menu()
@@ -240,23 +246,20 @@ def exibir_opcoes_menu():
         case 8: main()
 
 def exibir_opcoes_equipes():
-    texto = ''
-    for i in range(len(lista_equipes) - 2):
-        if i % 2 == 0:
-            texto += f'{lista_equipes[i]:<30}\t{lista_equipes[i + 1]}\n'
-    texto += f'{lista_equipes[-2]}'
-
+    texto = listar_equipes()
     exibicao_personalizada('Equipes', texto)
 
     print(f'Sua equipe favorita: {usuario['equipe_favorita']}\n\n'
-          f'{'1. Alterar equipe favorita':<30}\t2. Voltar\n'
+          f'{'1. Alterar equipe favorita':<30}\t3. Voltar\n'
+          f'2. Detalhes sobre favorita\n'
           f'{'=' * 60}')
 
-    opcao_escolhida = forca_opcao('\nEscolha uma opção: ', range(1, 3))
+    opcao_escolhida = forca_opcao('\nEscolha uma opção: ', range(1, 4))
 
     match opcao_escolhida:
-        case 1: alterar_equipe(pagina_equipes)
-        case 2: menu()
+        case 1: alterar_equipe(exibir_opcoes_equipes)
+        case 2: exibir_detalhes()
+        case 3: menu()
 
 def exibir_corrida():
     evento = proxima_corrida()
@@ -351,7 +354,6 @@ def menu():
     '''
 
     titulo()
-    print(f'\nOlá {usuario['nome']}')
     exibir_opcoes_menu()
 
 def pagina_equipes():
