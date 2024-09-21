@@ -3,12 +3,12 @@ import sys
 import time
 from time import localtime
 
-from Projetos.CP.usuarios import usuario_base
 from usuarios import lista_usuarios
 from cadastro import cadastrar, alterar_nome, alterar_senha
 from login import entrar
 from corridas import proxima_corrida
 from equipes import *
+from quiz import sorteia_pergunta
 
 '''
 import logging
@@ -128,10 +128,9 @@ def exibir_detalhes():
                                        f'{'Pódios:':<30}\t{equipe['podios']}\n'
                                        f'{'Corridas:':<30}\t{equipe['corridas']}')
                 break
-        input('Pressione ENTER para continuar')
     else:
         print('Você não possui uma equipe favorita.')
-        input('Pressione ENTER para continuar')
+    input('Pressione ENTER para continuar')
     pagina_equipes()
 
 def muda_nome():
@@ -154,12 +153,16 @@ def atualiza_comunidade(novo_post=''):
 
     if feed[0][0] != 'Nenhuma publicação ainda\n':
         for i in range(len(feed)):
-            horario = ''
-            horario_do_post = feed[i][1]
-            dias_passados = localtime().tm_yday - horario_do_post
+            dia_do_post = feed[i][1]
+            dias_passados = localtime().tm_yday - dia_do_post
+            hora_do_post = feed[i][4]
+            min_do_post = feed[i][5]
 
             if dias_passados == 0:
-                horario = f'{localtime().tm_hour}:{localtime().tm_min}'
+                if localtime().tm_hour == hora_do_post and localtime().tm_min == min_do_post:
+                    horario = f'{localtime().tm_hour}:{localtime().tm_min}'
+                else:
+                    horario = f'{hora_do_post}:{min_do_post}'
             elif dias_passados < 7:
                 horario = f'{dias_passados} dia(s) atrás'
             else:
@@ -177,7 +180,7 @@ def atualiza_comunidade(novo_post=''):
 def fazer_postagem():
     post = input('Digite sua postagem: ')
 
-    novo_post = ['', localtime().tm_yday, post, usuario['id']]
+    novo_post = ['', localtime().tm_yday, post, usuario['id'], localtime().tm_hour, localtime().tm_min]
     atualiza_comunidade(novo_post)
 
 ##############################################################################################################
@@ -290,7 +293,7 @@ def exibir_opcoes_menu():
 
     match opcao_escolhida:
         case 1: pagina_comunidade()
-        case 2: menu()
+        case 2: pagina_quiz()
         case 3: menu()
         case 4: pagina_equipes()
         case 5: pagina_corrida()
@@ -316,6 +319,20 @@ def exibir_opcoes_comunidade():
     match opcao_escolhida:
         case 1: fazer_postagem(); exibir_opcoes_comunidade()
         case 2: menu()
+
+def exibir_opcoes_quiz():
+    if not usuario['jogou_hoje']:
+        if sorteia_pergunta():
+            usuario['sequencia_atual'] += 1
+            usuario['pontuacao_atual'] += 100
+        else:
+            usuario['sequencia_atual'] = 0
+        # usuario['jogou_hoje'] = True
+    else:
+        print('Você ja jogou hoje')
+        input('\nPressione ENTER para continuar')
+    menu()
+
 
 def exibir_opcoes_equipes():
     texto = listar_equipes()
@@ -435,6 +452,14 @@ def pagina_comunidade():
 
     titulo()
     exibir_opcoes_comunidade()
+
+def pagina_quiz():
+    '''
+    Função que exibe a página de quiz diário.
+    '''
+
+    titulo()
+    exibir_opcoes_quiz()
 
 def pagina_equipes():
     '''
