@@ -1,5 +1,7 @@
 import random
-from app import *
+import textwrap
+
+from gerais import exibicao_personalizada, forca_opcao
 
 lista_quiz = [
     {
@@ -78,10 +80,14 @@ def sorteia_pergunta():
     indice = random.randint(0, len(lista_quiz) - 1)
     quiz_do_dia = lista_quiz[indice]
     pergunta = quiz_do_dia['pergunta']
-    exibicao_personalizada('Quiz diário', pergunta)
+
+    pergunta_formatada = textwrap.fill(pergunta, width=60)
+
+    exibicao_personalizada('Quiz diário', pergunta_formatada)
+
     print(*quiz_do_dia['alternativas'], sep='\n')
     print(f'{'=' * 60}')
     resposta = forca_opcao('\nDigite uma opção: ', range(1, 5))
     if resposta == quiz_do_dia['resposta']:
-        return True
-    return False
+        return True, quiz_do_dia['resposta']
+    return False, quiz_do_dia['resposta']

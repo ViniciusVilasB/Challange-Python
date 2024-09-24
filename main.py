@@ -1,6 +1,3 @@
-import os
-import sys
-import time
 from time import localtime
 
 from usuarios import lista_usuarios
@@ -9,6 +6,8 @@ from login import entrar
 from corridas import proxima_corrida
 from equipes import *
 from quiz import sorteia_pergunta
+from ranking import define_top_10
+from gerais import *
 
 '''
 import logging
@@ -27,85 +26,6 @@ logging.critical('Erro crítico! O sistema pode parar de funcionar.')
 feed = [['Nenhuma publicação ainda\n']]
 
 ##############################################################################################################
-
-def verifica_int(msg):
-    '''
-    Essa função obriga o usuário a digitar um número inteiro.
-    Recebe uma mensagem para ser exibida ao usuário.
-    '''
-
-    num = input(msg)
-    while not num.isnumeric():
-        num = input(f'Digite apenas números: ')
-    num = int(num)
-    return num
-
-def verifica_elemento(elem, lista):
-    '''
-    Esta função verifica se um determinado elemento existe na lista.
-    Recebe o elemento e a lista como parâmetros.
-    '''
-
-    return elem in lista
-
-def forca_opcao(msg, lista):
-    '''
-    Esta função força o usuário a digitar uma opção válida.
-    Recebe uma mensagem a ser exibida e uma lista de opções válidas.
-    '''
-
-    opcao = verifica_int(msg)
-
-    while not verifica_elemento(opcao, lista):
-        print('Digite somente as opções válidas:', end=' ')
-        print(*lista, sep=', ', end='.\n')
-        opcao = verifica_int(msg)
-    return opcao
-
-def limpar_terminal():
-    '''
-    Essa função limpa o terminal caso esteja rodando em um ambiente padrão (Ex.: Windows, Linux ou macOS).
-    '''
-
-    if sys.stdin.isatty():
-        os.system('cls') if os.name == 'nt' else os.system('clear')
-        return True
-    return False
-
-def finalizar_app():
-    '''
-    Essa função finaliza a aplicação.
-    '''
-
-    limpar_terminal()
-    exibicao_personalizada('Programa Encerrado')
-    sys.exit()
-
-def titulo(esta_na_main=False):
-    '''
-    Essa função exibe o título da página.
-    Recebe um parâmetro opcional para verificar se está na função main.
-    '''
-
-    if limpar_terminal() or esta_na_main:
-        print(''' 
-███████╗      ███╗   ███╗ █████╗ ████████╗██╗ █████╗ ███╗  ██╗
-██╔════╝      ████╗ ████║██╔══██╗╚══██╔══╝██║██╔══██╗████╗ ██║
-█████╗  █████╗██╔████╔██║██║  ██║   ██║   ██║██║  ██║██╔██╗██║
-██╔══╝  ╚════╝██║╚██╔╝██║██║  ██║   ██║   ██║██║  ██║██║╚████║
-███████╗      ██║ ╚═╝ ██║╚█████╔╝   ██║   ██║╚█████╔╝██║ ╚███║
-╚══════╝      ╚═╝     ╚═╝ ╚════╝    ╚═╝   ╚═╝ ╚════╝ ╚═╝  ╚══╝
-                        - 🅶🆁🅸🅳 - 
-''')
-
-def exibicao_personalizada(titulo, msg=None):
-    print('\n' + "=" * 60)
-    print(f'{titulo:^60}')
-    print('=' * 60)
-
-    if msg:
-        print(msg)
-        print('=' * 60)
 
 def alterar_equipe(retornar_para):
     texto = listar_equipes(True)
@@ -182,6 +102,30 @@ def fazer_postagem():
 
     novo_post = ['', localtime().tm_yday, post, usuario['id'], localtime().tm_hour, localtime().tm_min]
     atualiza_comunidade(novo_post)
+
+def itens_disponiveis(itens):
+    itens_filtrados = 0
+
+    msg = ''
+    for item in itens:
+        if item['pontos'] < usuario['pontuacao_atual']:
+            itens_filtrados += 1
+            msg += f'{itens_filtrados}. {item['item']} - {item['pontos']} pontos\n'
+    msg += f'\nVocê possui {usuario['pontuacao_atual']} pontos'
+
+    if itens_filtrados == 0:
+        print('Você não possui pontos o suficiente para comprar um item')
+        input('Digite ENTER para continuar')
+    else:
+        exibicao_personalizada('Itens disponíveis', msg)
+        opcao_escolhida = forca_opcao(f'Escolha um item para comprar (0 para voltar): ', range(itens_filtrados + 1))
+
+        match opcao_escolhida:
+            case 0: pass
+            case _:
+                usuario['pontuacao_atual'] -= itens[opcao_escolhida - 1]['pontos']
+                print(f'\n{itens[opcao_escolhida - 1]['item']} comprado por {itens[opcao_escolhida - 1]['pontos']} pontos.')
+                input('Pressione ENTER para continuar')
 
 ##############################################################################################################
 
@@ -286,7 +230,7 @@ def exibir_opcoes_menu():
                       f'{'3. Ranking':<30}\t7. Meu perfil\n'
                       f'{'4. Equipes':<30}\t8. Sair')
 
-    print(f'\nOlá, {usuario['nome']}')
+    print(f'\nOlá, {usuario['nome']}!')
     opcao_escolhida = forca_opcao('Escolha uma opção: ', range(1, 9))
 
     atualiza_comunidade()
@@ -294,12 +238,14 @@ def exibir_opcoes_menu():
     match opcao_escolhida:
         case 1: pagina_comunidade()
         case 2: pagina_quiz()
-        case 3: menu()
+        case 3: pagina_ranking()
         case 4: pagina_equipes()
         case 5: pagina_corrida()
-        case 6: menu()
+        case 6: pagina_recompensas()
         case 7: pagina_perfil()
         case 8: main()
+
+    menu()
 
 def exibir_opcoes_comunidade():
     global feed
@@ -318,21 +264,26 @@ def exibir_opcoes_comunidade():
 
     match opcao_escolhida:
         case 1: fazer_postagem(); exibir_opcoes_comunidade()
-        case 2: menu()
+        case 2: pass
 
 def exibir_opcoes_quiz():
     if not usuario['jogou_hoje']:
-        if sorteia_pergunta():
+        acertou, resposta_certa = sorteia_pergunta()
+        if acertou:
             usuario['sequencia_atual'] += 1
             usuario['pontuacao_atual'] += 100
+            print(f'Resposta correta! Sequência atual é de: {usuario['sequencia_atual']}')
         else:
             usuario['sequencia_atual'] = 0
-        # usuario['jogou_hoje'] = True
-    else:
-        print('Você ja jogou hoje')
-        input('\nPressione ENTER para continuar')
-    menu()
+            print(f'Resposta errada. A resposta certa era a número {resposta_certa}')
 
+        if usuario['sequencia_atual'] > usuario['melhor_sequencia']:
+            usuario['melhor_sequencia'] = usuario['sequencia_atual']
+
+        usuario['jogou_hoje'] = True
+    else:
+        print('Você já jogou hoje')
+    input('\nPressione ENTER para continuar')
 
 def exibir_opcoes_equipes():
     texto = listar_equipes()
@@ -348,7 +299,20 @@ def exibir_opcoes_equipes():
     match opcao_escolhida:
         case 1: alterar_equipe(exibir_opcoes_equipes)
         case 2: exibir_detalhes()
-        case 3: menu()
+        case 3: pass
+
+def exibir_ranking():
+    lista_top10 = define_top_10()
+    msg = ''
+
+    for i in range(len(lista_top10)):
+        if i != len(lista_top10) - 1:
+            msg += f'{i + 1}. {lista_top10[i]['nome']}: {lista_top10[i]['melhor_sequencia']} segudas\n'
+        else:
+            msg += f'{i + 1}. {lista_top10[i]['nome']}: {lista_top10[i]['melhor_sequencia']} segudas'
+
+    exibicao_personalizada('Ranking', msg)
+    input('Pressione ENTER para continuar')
 
 def exibir_corrida():
     evento = proxima_corrida()
@@ -363,6 +327,31 @@ def exibir_corrida():
         print('Não há corridas próximas')
 
     input('\nPressione ENTER para continuar')
+
+def exibir_opcoes_recompensas():
+    itens = [
+        {'item' : 'Copo personalizado' , 'pontos' : 2000},
+        {'item' : 'Boné', 'pontos' : 5000},
+        {'item' : 'Camiseta', 'pontos' : 8000},
+        {'item' : 'Ingresso', 'pontos' : 20000},
+        {'item' : '2 ingresso', 'pontos' : 30000},
+    ]
+
+    msg = ''
+    for item in itens:
+        msg += f'- {item['item']} - {item['pontos']} pontos\n'
+    msg += f'\nVocê possui {usuario['pontuacao_atual']} pontos'
+
+    exibicao_personalizada('Recompensas', msg)
+    print(f'{'1. Comprar item':<30}\t2. Voltar\n'
+          f'{'=' * 60}')
+
+    opcao_escolhida = forca_opcao('Escolha uma opção: ', range(1, 3))
+
+    match opcao_escolhida:
+        case 1: itens_disponiveis(itens)
+        case 2: menu()
+    pagina_recompensas()
 
 def exibir_opcoes_perfil():
     '''
@@ -387,7 +376,7 @@ def exibir_opcoes_perfil():
         case 1: muda_nome()
         case 2: muda_senha()
         case 3: alterar_equipe(pagina_perfil)
-        case 4: menu()
+        case 4: pass
 
 ##############################################################################################################
 
@@ -469,6 +458,14 @@ def pagina_equipes():
     titulo()
     exibir_opcoes_equipes()
 
+def pagina_ranking():
+    '''
+    Função que exibe a página de ranking.
+    '''
+
+    titulo()
+    exibir_ranking()
+
 def pagina_corrida():
     '''
     Função que exibe a página de corridas.
@@ -476,7 +473,14 @@ def pagina_corrida():
 
     titulo()
     exibir_corrida()
-    menu()
+
+def pagina_recompensas():
+    '''
+    Função que exibe a página de recompensas.
+    '''
+
+    titulo()
+    exibir_opcoes_recompensas()
 
 def pagina_perfil():
     '''
