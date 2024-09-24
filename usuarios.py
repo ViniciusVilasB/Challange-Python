@@ -16,8 +16,8 @@ lista_usuarios = [
         'equipe_favorita': 'Mahindra',
         'pontuacao_atual': 2200,
         'jogou_hoje': False,
-        'sequencia_atual': 7,
-        'melhor_sequencia': 7,
+        'sequencia_atual': 12,
+        'melhor_sequencia': 13,
         'id': 0
     },
     {
@@ -26,8 +26,8 @@ lista_usuarios = [
         'equipe_favorita': 'Nissan',
         'pontuacao_atual': 1500,
         'jogou_hoje': False,
-        'sequencia_atual': 4,
-        'melhor_sequencia': 13,
+        'sequencia_atual': 7,
+        'melhor_sequencia': 7,
         'id': 1
     },
     {

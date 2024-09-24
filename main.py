@@ -1,13 +1,13 @@
+##############################################################################################################
+
 from time import localtime
 
 from usuarios import lista_usuarios
 from cadastro import cadastrar, alterar_nome, alterar_senha
 from login import entrar
-from corridas import proxima_corrida
-from equipes import *
-from quiz import sorteia_pergunta
 from ranking import define_top_10
-from gerais import *
+
+from services import *
 
 '''
 import logging
@@ -146,7 +146,7 @@ def exibir_opcoes_principal():
         case 3: pagina_readme()
         case 4: finalizar_app()
 
-def exibir_readme(caminho_arquivo='README.md'):
+def exibir_readme(caminho_arquivo='./README.md'):
     '''
     Exibe o conteúdo de um arquivo de texto. O README é usado como padrão.
     Recebe o caminho do arquivo como parâmetro.
@@ -306,10 +306,9 @@ def exibir_ranking():
     msg = ''
 
     for i in range(len(lista_top10)):
+        msg += f'{i + 1}. {lista_top10[i]['nome']}: {lista_top10[i]['melhor_sequencia']} acertos em sequência'
         if i != len(lista_top10) - 1:
-            msg += f'{i + 1}. {lista_top10[i]['nome']}: {lista_top10[i]['melhor_sequencia']} segudas\n'
-        else:
-            msg += f'{i + 1}. {lista_top10[i]['nome']}: {lista_top10[i]['melhor_sequencia']} segudas'
+            msg += '\n'
 
     exibicao_personalizada('Ranking', msg)
     input('Pressione ENTER para continuar')
@@ -334,7 +333,7 @@ def exibir_opcoes_recompensas():
         {'item' : 'Boné', 'pontos' : 5000},
         {'item' : 'Camiseta', 'pontos' : 8000},
         {'item' : 'Ingresso', 'pontos' : 20000},
-        {'item' : '2 ingresso', 'pontos' : 30000},
+        {'item' : '2 ingressos', 'pontos' : 30000},
     ]
 
     msg = ''
