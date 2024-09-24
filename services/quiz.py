@@ -1,7 +1,7 @@
 import random
 import textwrap
 
-from Projeto.services.gerais import exibicao_personalizada, forca_opcao
+from .gerais import exibicao_personalizada, forca_opcao
 
 lista_quiz = [
     {
