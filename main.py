@@ -1,6 +1,5 @@
-##############################################################################################################
-
 from time import localtime
+import logging
 
 from usuarios import lista_usuarios
 from cadastro import cadastrar, alterar_nome, alterar_senha
@@ -9,25 +8,14 @@ from ranking import define_top_10
 
 from services import *
 
-'''
-import logging
-
-# Configurando o logger para diferentes níveis de log
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-
-# Exemplo de diferentes níveis de log
-logging.debug('Isso é uma mensagem de depuração')
-logging.info('Isso é uma mensagem informativa')
-logging.warning('Isso é um alerta')
-logging.error('Ocorreu um erro!')
-logging.critical('Erro crítico! O sistema pode parar de funcionar.')
-'''
 
 feed = [['Nenhuma publicação ainda\n']]
 
 ##############################################################################################################
 
 def alterar_equipe(retornar_para):
+    logging.info('Alterando equipe favorita do usuário.')
     texto = listar_equipes(True)
     exibicao_personalizada('Altere a equipe', texto)
 
@@ -35,10 +23,12 @@ def alterar_equipe(retornar_para):
     opcao_escolhida = forca_opcao('\nEscolha uma nova equipe para acompanhar: ', range(1, 13))
 
     usuario['equipe_favorita'] = lista_equipes[opcao_escolhida - 1]['nome']
+    logging.info(f"Nova equipe favorita: {usuario['equipe_favorita']}")
 
     return retornar_para()
 
 def exibir_detalhes():
+    logging.info('Exibindo detalhes da equipe favorita.')
     if usuario['equipe_favorita'] != 'Nenhuma':
         for equipe in lista_equipes:
             if equipe['nome'] == usuario['equipe_favorita']:
@@ -49,22 +39,26 @@ def exibir_detalhes():
                                        f'{'Corridas:':<30}\t{equipe['corridas']}')
                 break
     else:
+        logging.warning('Nenhuma equipe favorita definida.')
         print('Você não possui uma equipe favorita.')
     input('Pressione ENTER para continuar')
     pagina_equipes()
 
 def muda_nome():
+    logging.info('Iniciando processo de alteração de nome.')
     exibicao_personalizada('Altere seu nome')
     usuario['nome'] = alterar_nome(usuario['nome'])
     pagina_perfil()
 
 def muda_senha():
+    logging.info('Iniciando processo de alteração de senha.')
     exibicao_personalizada('Altere sua senha')
     usuario['senha'] = alterar_senha(usuario['senha'])
     pagina_perfil()
 
 def atualiza_comunidade(novo_post=''):
     global feed
+    logging.info('Atualizando feed da comunidade.')
 
     if novo_post:
         feed.append(novo_post)
@@ -98,12 +92,14 @@ def atualiza_comunidade(novo_post=''):
             feed[i][0] = f'{horario}: @{nome_autor}({equipe_autor}): {post}\n'
 
 def fazer_postagem():
+    logging.info('Usuário fazendo nova postagem.')
     post = input('Digite sua postagem: ')
 
     novo_post = ['', localtime().tm_yday, post, usuario['id'], localtime().tm_hour, localtime().tm_min]
     atualiza_comunidade(novo_post)
 
 def itens_disponiveis(itens):
+    logging.info('Exibindo opções principais.')
     itens_filtrados = 0
 
     msg = ''
@@ -146,7 +142,7 @@ def exibir_opcoes_principal():
         case 3: pagina_readme()
         case 4: finalizar_app()
 
-def exibir_readme(caminho_arquivo='./README.md'):
+def exibir_readme(caminho_arquivo='README.md'):
     '''
     Exibe o conteúdo de um arquivo de texto. O README é usado como padrão.
     Recebe o caminho do arquivo como parâmetro.
@@ -248,6 +244,10 @@ def exibir_opcoes_menu():
     menu()
 
 def exibir_opcoes_comunidade():
+    '''
+    Essa função exibe a página de comunidade do projeto com opções disponíveis.
+    '''
+
     global feed
 
     atualiza_comunidade()
@@ -267,6 +267,10 @@ def exibir_opcoes_comunidade():
         case 2: pass
 
 def exibir_opcoes_quiz():
+    '''
+    Essa função exibe a página de quiz do projeto com opções disponíveis.
+    '''
+
     if not usuario['jogou_hoje']:
         acertou, resposta_certa = sorteia_pergunta()
         if acertou:
@@ -286,6 +290,10 @@ def exibir_opcoes_quiz():
     input('\nPressione ENTER para continuar')
 
 def exibir_opcoes_equipes():
+    '''
+    Essa função exibe a página de equipes do projeto com opções disponíveis.
+    '''
+
     texto = listar_equipes()
     exibicao_personalizada('Equipes', texto)
 
@@ -302,18 +310,27 @@ def exibir_opcoes_equipes():
         case 3: pass
 
 def exibir_ranking():
+    '''
+    Essa função exibe a página de ranking de jogadores do projeto.
+    '''
+
     lista_top10 = define_top_10()
     msg = ''
 
     for i in range(len(lista_top10)):
-        msg += f'{i + 1}. {lista_top10[i]['nome']}: {lista_top10[i]['melhor_sequencia']} acertos em sequência'
         if i != len(lista_top10) - 1:
-            msg += '\n'
+            msg += f'{i + 1}. {lista_top10[i]['nome']}: {lista_top10[i]['melhor_sequencia']} segudas\n'
+        else:
+            msg += f'{i + 1}. {lista_top10[i]['nome']}: {lista_top10[i]['melhor_sequencia']} segudas'
 
     exibicao_personalizada('Ranking', msg)
     input('Pressione ENTER para continuar')
 
 def exibir_corrida():
+    '''
+    Essa função exibe a página com a próxima corrida.
+    '''
+
     evento = proxima_corrida()
 
     if evento is not None:
@@ -328,12 +345,16 @@ def exibir_corrida():
     input('\nPressione ENTER para continuar')
 
 def exibir_opcoes_recompensas():
+    '''
+    Essa função exibe a página de recompensas de forma organizada.
+    '''
+
     itens = [
         {'item' : 'Copo personalizado' , 'pontos' : 2000},
         {'item' : 'Boné', 'pontos' : 5000},
         {'item' : 'Camiseta', 'pontos' : 8000},
         {'item' : 'Ingresso', 'pontos' : 20000},
-        {'item' : '2 ingressos', 'pontos' : 30000},
+        {'item' : '2 ingresso', 'pontos' : 30000},
     ]
 
     msg = ''
@@ -387,6 +408,7 @@ def main():
     global usuario
     usuario = None
 
+    logging.info('Iniciando o sistema.')
     titulo(True)
     exibir_opcoes_principal()
 
@@ -492,4 +514,7 @@ def pagina_perfil():
 ##############################################################################################################
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception as e:
+        logging.critical(f'Erro crítico: {e}')
