@@ -15,7 +15,7 @@ Rede social focada em interacao entre o publico da Formula E com sistema de comu
 
 ## Instrucoes de uso
 
-Navegacao feita apenas com numeros.
+Baixar o arquivo zip, extraia-o e execute o arquivo main.py.
 
 ## Requisitos
 
@@ -27,4 +27,4 @@ Dependencias basicas do python
 
 ## Informacoes relevantes
 
-Cada perfil contem suas proprias informacoes independentes, possibilitando cada usuario ter seus pontos, recordes, equipe favorita e login.
+Navegacao feita apenas com numeros. Cada perfil contem suas proprias informacoes independentes, possibilitando cada usuario ter seus pontos, recordes, equipe favorita e login.
